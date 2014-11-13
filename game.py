@@ -9,6 +9,7 @@ class Game:
         self.chips = [1000 for i in range(n)]
         self.stillPlaying = [True for i in range(n)]
         self.playerHands = [None for i in range(n)]
+        self.currBets = [0 for i in range(n)]
         self.dealerHand = None
         self.deck = Deck()
 
@@ -23,11 +24,32 @@ class Game:
     def dealHand():
         pass
 
-    def placeBets():
+    def finishRound():
         pass
+        
+        
+
+    def placeBets():
+        for i in range(len(self.chips)):
+            while True:
+                try:
+                    curr = int(input())
+                    if not self.isValidBet(curr,i):
+                        print "you are not allowed to bet more than you have"
+                        continue
+                    else:
+                        print "you bet %d" % curr
+                        currBets[i] = curr
+                        break
+                except:
+                    print "please enter a valid number"
+                    continue
+
+                    
+                
 
     def isValidBet(amt,playerId):
-        pass
+        return True if self.chips[playerID] >= amt else False
 
      
 class Deck:
@@ -38,13 +60,13 @@ class Deck:
         for i in range(4*n):
             self.cards.extend(cardValIds)
 
+    def getHand():
+        out = [self.cards.pop(),self.cards.pop()]
+
+    def shuffle():
+        pass
         
         
-
-    @staticmethod
-    def getValue(val):
-       if val > 
-
 class Hand:
     
     def __init__(self,n1,n2):
