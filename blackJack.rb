@@ -71,8 +71,8 @@ class Game
 		for player in @players
 
 			for hand in player.getHands()
-				puts "Dealer shows a " + @dealersHand.printHand()[0,1] + "\n"
-				puts player.getID() + ", What would you like to do? (type h for all possible options)" + "\n"
+				puts "Dealer shows a " + @dealersHand.printHand().split(',')[0] + "\n"
+				puts player.getID() + ", What would you like to do? (type help for all possible options)" + "\n"
 				while true
 					puts "Your current hand: " + hand.printHand() + " (" + String(hand.getValue) + ")" +  "\n"
 					if hand.isBusted()
@@ -80,7 +80,7 @@ class Game
 						break
 					end
 					desiredAction = gets.split.join('    ') # gets rid of new lines
-					if desiredAction == "h"
+					if desiredAction == "help"
 						puts @@validActions.join("    ") + "\n"
 					elsif !@@validActions.include?(desiredAction)
 						puts "please enter a valid action" + "\n"
@@ -150,8 +150,13 @@ class Game
 				else
 					changeInChips = mult * player.getCurrBet
 				end
-				puts "\t" + hand.printHand() + " (" + String(hand.getValue) + ")" + "change in chips: " +  String(changeInChips)
+				puts "\t" + hand.printHand() + "(" + String(hand.getValue) + ")" + "change in chips: " +  String(changeInChips)
 				player.modifyChips(changeInChips)
+			end
+		end
+		for player in @players
+			if player.getNumChips() == 0
+				puts player.getID() + " has busted out\n"
 			end
 		end
 	end
