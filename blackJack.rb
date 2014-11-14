@@ -1,5 +1,5 @@
 #!/usr/bin/ruby1.8
-require 'test/unit'
+# require 'test/unit'
 
 
 class Game
@@ -16,21 +16,21 @@ class Game
 		@numHands = {}
 		
 		while true
-			puts "How many players (max. 8)"
+			puts "How many players (max. 8)" + "\n"
 			begin
 				num = Integer(gets)
 				if num > 8 or num < 1
-					puts "please enter a valid number of players"
+					puts "please enter a valid number of players" + "\n"
 				else
 					@numPlayers = num
 					break
 				end
 			rescue
-				puts "please enter a valid number of players"
+				puts "please enter a valid number of players" + "\n"
 				next
 			end
 		end
-		for i in 1..@numPlayers:
+		for i in 1..@numPlayers
 			@players.push(Player.new(i))
 		end
 	end
@@ -38,18 +38,18 @@ class Game
 	def getBets()
 		for player in @players
 			while true
-				puts player.getID() + ", please make a bet (you have " + String(player.getNumChips()) + " chips)"
+				puts player.getID() + ", please make a bet (you have " + String(player.getNumChips()) + " chips)" + "\n"
 				begin
 					bet = Integer(gets)
-					if bet < player.getNumChips and bet > 0
+					if bet <= player.getNumChips and bet > 0
 						player.setCurrBet(bet)
 						break
 					else
-						puts "please enter a valid amount to bet"
+						puts "please enter a valid amount to bet" + "\n"
 						next
 					end
 				rescue
-					puts "Invalid bet amount. Please enter a valid bet amount"
+					puts "Invalid bet amount. Please enter a valid bet amount" + "\n"
 					next
 				end
 			end
@@ -71,19 +71,19 @@ class Game
 		for player in @players
 
 			for hand in player.getHands()
-				puts "Dealer shows a " + @dealersHand.printHand()[0,1]
-				puts player.getID() + ", What would you like to do? (type h for all possible options)"
+				puts "Dealer shows a " + @dealersHand.printHand()[0,1] + "\n"
+				puts player.getID() + ", What would you like to do? (type h for all possible options)" + "\n"
 				while true
-					puts "Your current hand: " + hand.printHand()
+					puts "Your current hand: " + hand.printHand() + " (" + String(hand.getValue) + ")" +  "\n"
 					if hand.isBusted()
-						puts "BUSTED"
+						puts "BUSTED" + "\n"
 						break
 					end
 					desiredAction = gets.split.join('    ') # gets rid of new lines
 					if desiredAction == "h"
-						puts @@validActions.join("    ")
+						puts @@validActions.join("    ") + "\n"
 					elsif !@@validActions.include?(desiredAction)
-						puts "please enter a valid action"
+						puts "please enter a valid action" + "\n"
 					elsif desiredAction == "hit"
 						hand.addCard()
 					elsif desiredAction == "stand"
@@ -91,9 +91,9 @@ class Game
 					elsif desiredAction == "split"
 						hand.printHand()
 						if !hand.canSplit()
-							puts "this hand is not valid for splitting. Pick another action"
+							puts "this hand is not valid for splitting. Pick another action" + "\n"
 						elsif (@numHands[player] + 1) * player.getCurrBet() > player.getNumChips()
-							puts "You don't have enough chips to split. Pick another action"
+							puts "You don't have enough chips to split. Pick another action" + "\n"
 						else
 							@numHands[player] = @numHands[player] + 1
 							h1,h2 = hand.split()
@@ -102,48 +102,72 @@ class Game
 						end
 					elsif desiredAction == "double"
 						if !hand.canDoubleDown()
-							puts "this hand can't be doubled down. Pick another action"
+							puts "this hand can't be doubled down. Pick another action" + "\n"
 						elsif (@numHands[player] + 1) * player.getCurrBet() > player.getNumChips()
-							puts "You don't have enough chips to double down. Pick another action"
+							puts "You don't have enough chips to double down. Pick another action" + "\n"
 						else
 							@numHands[player] = @numHands[player] + 1
 							hand.doubleDown()
-							puts "Your hand after doubling down: " + hand.printHand()
+							puts "Your hand after doubling down: " + hand.printHand() + "\n"
 							break
 						end
 					end
 				end
 			end
 		end
-
 	end
 	
-	def getDealerActions()
-		while true:
-			terminalStates = @dealersHand.getValue()#.select!{|num| num <= 21 and num >= 17}
-			puts "Terminal states"
-			puts @dealersHand.printHand()
-			puts terminalStates
-			if @dealersHand.isBusted()
-				break
-			elsif terminalStates.length == 0
-				@dealersHand.addCard()
-			else
-				@dealerValue = terminalStates.max()
-				break
-			end
+	def getDealerCards()
+		while @dealersHand.getValue() < 17
+			@dealersHand.addCard()
+		end
+		if @dealersHand.getValue() <= 21
+			puts "Dealers final hand is " + @dealersHand.printHand
+		else 
+			puts "Dealers busts with " + @dealersHand.printHand
 		end
 	end
 
 	def moveChips()
-		# for player in @players
-			# for hand in player.getHand()
+		puts "\n" + "Dealers hand: " + @dealersHand.printHand()  + "(" + String(@dealersHand.getValue()) + ")"
+		for player in @players
+			puts player.getID() + "'s hands"
+			for hand in player.getHands()
+				if hand.isSplit
+					next 
+				end
+				mult = if hand.isDoubledDown then 2 else 1 end
+				changeInChips = 0
 
-
-
-
-
-
+				if hand.isBusted()
+					changeInChips = -1 * mult * player.getCurrBet
+				elsif @dealersHand.isBusted()
+					changeInChips = mult * player.getCurrBet
+				elsif hand.getValue == @dealersHand.getValue
+					nil
+				elsif hand.getValue < @dealersHand.getValue
+					changeInChips = -1 * mult * player.getCurrBet
+				else
+					changeInChips = mult * player.getCurrBet
+				end
+				puts "\t" + hand.printHand() + " (" + String(hand.getValue) + ")" + "change in chips: " +  String(changeInChips)
+				player.modifyChips(changeInChips)
+			end
+		end
+	end
+	
+	def finishRound()
+		@players = @players.select{|player| player.getNumChips() > 0}
+		for player in @players
+			player.clearHands()
+		end
+		if @players.length() == 0
+			puts "all players have busted out. Game Over."
+			exit
+		end
+		if @deck.timeToRefill()
+			@deck = Deck.new()
+		end
 	end
 
 	def startGame()
@@ -151,11 +175,9 @@ class Game
 			getBets()
 			dealHands()
 			getPlayerActions()
-			getDealerActions()
-	 		# moveChips()
-	 		if @deck.timeToRefill()
-	 			@deck = Deck.new()
-	 		end
+			getDealerCards()
+	 		moveChips()
+	 		finishRound()
 		end
 	end
 end
@@ -222,8 +244,8 @@ class Hand
 	end
 	
 	def self.splitHand(deck,handToSplit)
-		hand1 = Hand(deck)
-		hand2 = Hand(deck)
+		hand1 = Hand.new(deck)
+		hand2 = Hand.new(deck)
 		hand1.addCard(handToSplit[0])
 		hand1.addCard()
 		hand2.addCard(handToSplit[1])
@@ -234,12 +256,13 @@ class Hand
 
 
 	def getValue()
-		puts String(@cardValueIds.join(","))
+		# puts String(@cardValueIds.join(","))
 		numAces = 0
 		currSum = 0
 		for card in @cardValueIds
 			if card == 1
 				numAces += 1
+				currSum += 1
 			elsif card <= 10
 				currSum += card
 			else
@@ -247,12 +270,16 @@ class Hand
 			end
 		end
 		if numAces == 0
-			return [currSum]
+			return currSum
 		else
-			out = [currSum + numAces]
-			for i in 0..numAces
-				out.push(numAces + i * 10 + currSum)
-			return out
+			out = [currSum]
+			for i in 1..numAces
+				out.push(i * 10 + currSum)
+			end
+			if out.min() > 21
+				return out.min()
+			else
+				return out.select{|number| number <= 21}.max()
 			end
 		end
 	end
@@ -283,14 +310,15 @@ class Hand
 	end
 
 	def canSplit()
-		if @cardValueIds.length() == 2 and @cardValueIds[0] == @cardValueIds[1]
+		if @cardValueIds.length() == 2 and (@cardValueIds[0] == @cardValueIds[1] or getValue() == 20)
 			return true
-		return false
+		else
+			return false
 		end
 	end
 
 	def isBusted()
-		if getValue().min>21
+		if getValue() > 21
 			return true
 		return false
 		end
@@ -302,6 +330,10 @@ class Hand
 
 	def isDoubledDown()
 		return @isDoubledDown
+	end
+
+	def isSplit()
+		return @isSplit
 	end
 
 
@@ -321,11 +353,11 @@ class Deck
 			if @@cardNames.key?(id)
 				return @@cardNames.fetch(id)
 			else
-				puts "INVALID VALUE ID"
+				puts "INVALID VALUE ID" + "\n"
 				return nil
 			end
 		rescue
-			puts "INVALID VALUE ID"
+			puts "INVALID VALUE ID" + "\n"
 			return nil
 		end
 	end
@@ -362,16 +394,20 @@ end
 
 def testGenValue()
 	d = Deck.new()
-	# a = Hand.new(d,[1,1])
-	# assert_equal(a.getValue(),[2,12,22])
+
+	a = Hand.new(d,[1,1])
+	if a.getValue() != 12
+		puts "1,1 doesn't give the value 12" + "\n"
+		puts "instead, it gives the value: " + String(a.getValue().join(",")) + "\n"
+	end
+
 	b = Hand.new(d,[2,2])
-	if b.getValue() == [4]
-		print 2,2 d 
+	if b.getValue() != 4
+		puts "2,2 doesn't give the value 4" + "\n"
+		puts "instead, it gives the value: " + String(b.getValue().join(",")) + "\n"
 	end
 		
-	# puts String(a.getValue().join(","))
-	puts String(b.getValue().join(","))
 end
 testGenValue()
-# a = Game.new()
-# a.startGame()
+a = Game.new()
+a.startGame()
